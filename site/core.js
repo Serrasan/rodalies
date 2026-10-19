@@ -94,7 +94,7 @@ window.Rod = (() => {
 
     // Retard: el que publica Renfe o, si és més gran, el que es dedueix de la posició del tren
     // (si encara és aturat en una estació de la qual ja havia de sortir, o no hi ha arribat a l'hora)
-    const reported = info && info.delay != null ? info.delay : null;
+    const reported = info && info.delay != null ? Math.max(info.delay, 0) : null; // un tren no surt abans d'hora
     const inferred = inferDelay(trip, veh);
     const delay = inferred != null && inferred > (reported ?? 0) + 60 ? inferred : reported;
     if (delay != null) {
@@ -114,6 +114,13 @@ window.Rod = (() => {
 
     // Si la propera parada (o on és el tren) ja és després de l'origen, el tren ja ha passat
     if (oIdx >= 0 && [info?.next?.stop, veh?.stop].filter(Boolean).some((sid) => idx(sid) > oIdx)) st.passed = true;
+    // Encara no ha arribat a la teva estació (la propera parada és abans o és la teva): segueix a la llista
+    const nIdx = info?.next?.stop ? idx(info.next.stop) : -1;
+    if (!st.passed && nIdx >= 0 && nIdx <= oIdx) {
+      st.waiting = true;
+      const now = nowS();
+      if (st.est < now) { st.est = now; st.estArr = Math.max(st.estArr, now + (trip.arr - trip.dep)); }
+    }
     return st;
   }
 
@@ -136,7 +143,7 @@ window.Rod = (() => {
     return schedule.trips
       .filter((t) => t.dir === dir)
       .map((trip) => ({ trip, st: trainStatus(schedule, live, trip) }))
-      .filter(({ st }) => !st.passed && (st.est >= t0 - PAST_GRACE_S || (st.noNews && st.est >= t0 - NO_NEWS_KEEP_S)))
+      .filter(({ st }) => !st.passed && (st.est >= t0 - PAST_GRACE_S || st.waiting || (st.noNews && st.est >= t0 - NO_NEWS_KEEP_S)))
       .sort((a, b) => a.st.est - b.st.est)
       .slice(0, max);
   }

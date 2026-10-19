@@ -60,7 +60,9 @@
           el("span", { class: "t" + (late ? " late" : "") }, hm(st.est), late ? el("small", {}, hm(trip.dep)) : null),
           el("span", { class: "info" }, el("span", { class: "badge", style: `background:${trip.color}` }, trip.line), el("span", { class: "dest" }, state.schedule.stops[trip.to]?.[0] || "")),
           el("span", { class: "pill " + st.kind }, st.label),
-          el("span", { class: "sub" }, "Arriba ", el("b", {}, hm(st.estArr)), ` · tren ${trip.train}` + (cd ? ` · ${cd}` : ""))));
+          el("span", { class: "sub" }, "Arriba ", el("b", {}, hm(st.estArr)),
+            st.delay > 60 ? el("span", { class: "late-tag" }, " " + fmtDelay(st.delay)) : null,
+            ` · tren ${trip.train}` + (cd ? ` · ${cd}` : ""))));
       });
     }
     return nextBy;

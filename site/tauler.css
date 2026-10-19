@@ -186,3 +186,5 @@ footer.wrap { padding-block: 12px 28px; font-size: 0.8rem; color: var(--muted); 
 .arr .what { font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
 @media (max-width: 480px) { .clock { font-size: 2rem; } .arr { flex: 1 1 100%; } }
 
+
+.sub .late-tag { color: var(--bad); font-weight: 700; font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
