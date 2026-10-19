@@ -3,7 +3,6 @@
 //   trips:    [{ id, line, color, train, dir, to, stops: [[estació, arribada, sortida], ...] }]
 //   statusOf: (trip) => { delay: segons o null, known: bool, canceled: bool }
 //   ara:      segons UNIX. Retorna { count, next: { A: {...}, B: {...} } }
-//   opts.gpsOf (opcional): (trip) => { lat, lon, ts } amb la posició GPS real del tren, o null
 window.RodDiagram = function (svg, opts) {
   "use strict";
   const CORRIDOR = ["71400", "71401", "71500", "71502", "71503", "71600", "71700", "71801", "71802", "79400"];
@@ -24,8 +23,6 @@ window.RodDiagram = function (svg, opts) {
   };
   const mmss = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m}:${String(s % 60).padStart(2, "0")}`; };
   const shortName = (sid) => SHORT[sid] || name(sid);
-  // Enllaç a Google Maps amb la posició GPS real (al mòbil obre l'app de mapes)
-  const gpsUrl = (g) => `https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lon}`;
 
   // Via i estacions
   svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
@@ -35,8 +32,7 @@ window.RodDiagram = function (svg, opts) {
   style.textContent = `
     .rd-pulse { transform-box: fill-box; transform-origin: center; animation: rd-pulse 1.6s ease-out infinite; }
     @keyframes rd-pulse { from { transform: scale(1); opacity: .55 } to { transform: scale(2.6); opacity: 0 } }
-    @media (prefers-reduced-motion: reduce) { .rd-pulse { animation: none; opacity: 0; } }
-    .rd-link { cursor: pointer; } .rd-link:hover rect { filter: brightness(1.12); } .rd-link:focus-visible rect { stroke: var(--ink); stroke-width: 2; }`;
+    @media (prefers-reduced-motion: reduce) { .rd-pulse { animation: none; opacity: 0; } }`;
   mk(svg, "line", { x1: xOf(SOUTH), y1: Y, x2: X1 + 30, y2: Y, stroke: "var(--track)", "stroke-width": 6, "stroke-linecap": "round" });
   mk(svg, "text", { x: xOf(SOUTH) - 8, y: Y + 4, "text-anchor": "end", fill: "var(--muted)", "font-size": 12 }, "Sud");
   CORRIDOR.forEach((sid, i) => {
@@ -80,7 +76,7 @@ window.RodDiagram = function (svg, opts) {
         if (eta >= time && (!next[key] || eta < next[key].eta)) next[key] = { trip, eta, delay, known: st.known };
       }
       const w = where(trip, delay, time);
-      if (w) items.push({ trip, w, x: xOf(w.p), delay, known: st.known, up: trip.dir === "AB", gps: opts.gpsOf ? opts.gpsOf(trip) : null });
+      if (w) items.push({ trip, w, x: xOf(w.p), delay, known: st.known, up: trip.dir === "AB" });
     }
 
     layer.replaceChildren();
@@ -93,24 +89,22 @@ window.RodDiagram = function (svg, opts) {
         const head = `${trip.line} ${trip.train}`;
         const dl = it.delay > 60 ? `+${Math.round(it.delay / 60) >= 60 ? Math.floor(Math.round(it.delay / 60) / 60) + " h " + (Math.round(it.delay / 60) % 60) + " min" : Math.round(it.delay / 60) + " min"}` : "";
         const sub = w.stopped ? `Aturat a ${shortName(w.at)} · surt en ${mmss(w.left)}` : `→ ${shortName(w.to)} en ${mmss(w.left)}`;
-        const wbox = Math.max((head.length + dl.length) * 8 + (dl ? 44 : 34), sub.length * 6.4 + 22 + (it.gps ? 44 : 0));
+        const wbox = Math.max((head.length + dl.length) * 8 + (dl ? 44 : 34), sub.length * 6.4 + 22);
         const bx = Math.min(Math.max(it.x - wbox / 2, 6), W - wbox - 6);
         let lane = lanesEnd.findIndex((end) => end < bx - 6);
         if (lane < 0) lane = lanesEnd.length;
         lanesEnd[lane] = bx + wbox;
         const y = up ? Y - 66 - lane * 46 : Y + 66 + lane * 46;
         minY = Math.min(minY, y - 26); maxY = Math.max(maxY, y + 26);
-        const parent = it.gps ? mk(layer, "a", { href: gpsUrl(it.gps), target: "_blank", rel: "noopener", class: "rd-link" }) : layer;
-        const g = mk(parent, "g", { opacity: it.known ? 1 : 0.5 });
+        const g = mk(layer, "g", { opacity: it.known ? 1 : 0.5 });
         mk(g, "line", { x1: it.x, y1: Y, x2: it.x, y2: up ? y + 19 : y - 19, stroke: trip.color, "stroke-width": 2, "stroke-dasharray": "3 3" });
         if (!w.stopped && it.known) mk(g, "circle", { class: "rd-pulse", cx: it.x, cy: Y, r: 8, fill: trip.color });
         mk(g, "circle", { cx: it.x, cy: Y, r: 8, fill: w.stopped ? "var(--surface)" : trip.color, stroke: trip.color, "stroke-width": w.stopped ? 4 : 2.5 });
         mk(g, "rect", { x: bx, y: y - 19, width: wbox, height: 38, rx: 8, fill: trip.color });
         mk(g, "text", { x: bx + 9, y: y - 3, fill: "#fff", "font-size": 13.5, "font-weight": 700 }, (up ? "" : "← ") + head + (up ? " →" : ""));
-        if (it.gps) mk(g, "text", { x: bx + wbox - 9, y: y + 13, "text-anchor": "end", fill: "#fff", "font-size": 10.5, "font-weight": 700, "letter-spacing": "0.04em" }, "GPS ↗");
         if (dl) mk(g, "text", { x: bx + wbox - 9, y: y - 3, "text-anchor": "end", fill: "#fff", "font-size": 12.5, "font-weight": 700 }, dl);
         mk(g, "text", { x: bx + 9, y: y + 13, fill: "#fff", "fill-opacity": 0.9, "font-size": 11.5, "font-weight": 500, "font-family": "var(--font-mono)" }, sub);
-        mk(g, "title", {}, `${head} cap a ${name(trip.to)}` + (it.known ? (dl ? ` · ${dl}` : " · a l'hora") : " · sense dades en directe (segons horari)") + (it.gps ? " · toca per veure la posició GPS real" : ""));
+        mk(g, "title", {}, `${head} cap a ${name(trip.to)}` + (it.known ? (dl ? ` · ${dl}` : " · a l'hora") : " · sense dades en directe (segons horari)"));
       }
     }
     // El dibuix creix si hi ha molts trens junts, perquè cap etiqueta quedi tallada
@@ -118,5 +112,5 @@ window.RodDiagram = function (svg, opts) {
     return { count: items.length, next, items };
   }
 
-  return { render, mmss, gpsUrl };
+  return { render, mmss };
 };
