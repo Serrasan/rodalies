@@ -114,11 +114,15 @@ window.Rod = (() => {
 
   // Retard mínim que es dedueix de l'última posició: aturat a una estació després de l'hora de sortida,
   // o encara de camí a una estació després de l'hora d'arribada
+  // Atenció: en marxa, Renfe dona l'última estació per on ha passat el tren (no la següent)
   function inferDelay(trip, veh) {
     if (!veh || !veh.stop || !veh.ts) return null;
-    const s = trip.stops.find((x) => x[0] === veh.stop);
-    if (!s) return null;
-    const ref = veh.status === "STOPPED_AT" ? s[2] : s[1];
+    const i = trip.stops.findIndex((x) => x[0] === veh.stop);
+    if (i < 0) return null;
+    let ref;
+    if (veh.status === "STOPPED_AT") ref = trip.stops[i][2];          // encara aturat: havia de sortir a aquesta hora
+    else if (i + 1 < trip.stops.length) ref = trip.stops[i + 1][1];   // en marxa: encara no ha arribat a la següent
+    else return null;
     const d = veh.ts - ref;
     return d > 60 ? d : null;
   }
@@ -195,7 +199,8 @@ window.Rod = (() => {
 
   function vehicleText(schedule, veh) {
     const where = schedule.stops[veh.stop]?.[0];
-    const verb = veh.status === "STOPPED_AT" ? "Aturat a" : veh.status === "INCOMING_AT" ? "Arribant a" : "Cap a";
+    // En marxa, l'estació que dona Renfe és l'última per on ha passat
+    const verb = veh.status === "STOPPED_AT" ? "Aturat a" : "Ha passat per";
     return where ? `${verb} ${where}` : "Posició del tren";
   }
 
