@@ -58,6 +58,8 @@ window.Rod = (() => {
     // Canal de mitja distància (Regional Exprés): codi "LD:<número de tren>", s'enllaça pel número de tren d'avui
     const byTrain = new Map();
     for (const t of schedule.trips) if (t.date === today || !byTrain.has(t.train)) byTrain.set(t.train, t);
+    // L'horari ja ha emparellat cada Regional Exprés amb el seu tren de Rodalies per hora (camp "ld")
+    for (const t of schedule.trips) for (const n of t.ld || []) if (t.date === today || !byTrain.has(n)) byTrain.set(n, t);
     const match = (id) => String(id).startsWith("LD:") ? byTrain.get(String(id).slice(3)) : (byId.get(id) || byKey.get(String(id).slice(5)));
     const remap = (obj) => {
       const out = {};

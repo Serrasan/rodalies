@@ -130,10 +130,16 @@ def main():
 
     # Canal de mitja distància: els Regional Exprés són els mateixos trens (mateix número) i de vegades
     # només surten aquí. Omple els que falten al canal de Rodalies. Codi del tren: els 5 primers dígits.
+    # Número de tren al canal de mitja distància -> tren de l'horari. L'horari ja els ha emparellat per hora
+    # ("ld"); si no, s'agafa el mateix número.
     by_train = {}
     for t in SCHEDULE["trips"]:
         if t["date"] == today or t["train"] not in by_train:
             by_train[t["train"]] = t
+    for t in SCHEDULE["trips"]:  # l'emparellament per hora té prioritat sobre el número
+        for n in t.get("ld") or []:
+            if t["date"] == today or n not in by_train:
+                by_train[n] = t
     try:
         tu_ld = get_json(CONFIG["rt"]["trip_updates_ld"])
         for e in tu_ld.get("entity", []):

@@ -34,7 +34,7 @@ A partir d'aquí l'app demana dades noves cada 30 segons. Si el Worker falla, to
 | Fitxer | Què fa |
 | --- | --- |
 | `config.json` | Estacions del trajecte i adreces de les dades de Renfe. |
-| `scripts/build_schedule.py` | Un cop al dia baixa el GTFS de Renfe i guarda els trens que paren a les dues estacions (avui i demà). |
+| `scripts/build_schedule.py` | Un cop al dia baixa els horaris de Renfe (Rodalies i Regional Exprés), els combina per hora de sortida i guarda els trens que paren a les dues estacions (avui i demà). |
 | `scripts/fetch_live.py` | Cada execució baixa retards, posicions i avisos en temps real (canal de Rodalies i, per als Regional Exprés que hi falten, el de mitja distància) i es queda només amb els dels teus trens. |
 | `site/index.html`, `tauler.js`, `tauler.css` | El tauler principal. |
 | `site/mapa.html`, `app.js`, `style.css` | La vista de mapa. |

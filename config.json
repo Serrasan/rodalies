@@ -6,6 +6,7 @@
   "days": 2,
   "timezone": "Europe/Madrid",
   "gtfs_url": "https://ssl.renfe.com/ftransit/Fichero_CER_FOMENTO/fomento_transit.zip",
+  "gtfs_ld_url": "https://ssl.renfe.com/gtransit/Fichero_AV_LD/google_transit.zip",
   "rt": {
     "trip_updates": "https://gtfsrt.renfe.com/trip_updates.json",
     "vehicle_positions": "https://gtfsrt.renfe.com/vehicle_positions.json",
