@@ -40,13 +40,6 @@
       stat("Retard més gran", worst ? fmtDelay(worst.st.delay) : "0 min", worst ? `${worst.trip.line} ${worst.trip.train} · cap a ${state.schedule.stops[worst.trip.to]?.[0] || ""}` : "Cap retard ara"));
   }
 
-  // Enllaç a la posició GPS real, només si Renfe dona la posició del tren
-  function gpsLink(trip) {
-    const v = state.live?.vehicles?.[trip.id];
-    if (!v) return null;
-    return [" · ", el("a", { class: "gps", href: `https://www.google.com/maps/search/?api=1&query=${v.lat},${v.lon}`, target: "_blank", rel: "noopener", title: `Posició GPS de les ${hm(v.ts || state.live.generated)}` }, "Posició GPS ↗")];
-  }
-
   // ---------- sortides ----------
   function renderBoards() {
     const nextBy = {};
@@ -67,7 +60,7 @@
           el("span", { class: "t" + (late ? " late" : "") }, hm(st.est), late ? el("small", {}, hm(trip.dep)) : null),
           el("span", { class: "info" }, el("span", { class: "badge", style: `background:${trip.color}` }, trip.line), el("span", { class: "dest" }, state.schedule.stops[trip.to]?.[0] || "")),
           el("span", { class: "pill " + st.kind }, st.label),
-          el("span", { class: "sub" }, "Arriba ", el("b", {}, hm(st.estArr)), ` · tren ${trip.train}` + (cd ? ` · ${cd}` : ""), gpsLink(trip))));
+          el("span", { class: "sub" }, "Arriba ", el("b", {}, hm(st.estArr)), ` · tren ${trip.train}` + (cd ? ` · ${cd}` : ""))));
       });
     }
     return nextBy;
