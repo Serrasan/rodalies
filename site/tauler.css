@@ -52,7 +52,7 @@ button { font: inherit; color: inherit; }
 /* Capçalera de marca */
 .masthead { background: var(--brand); color: var(--brand-ink); }
 .masthead .wrap { padding-block: 14px; display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.logo { width: 36px; height: 36px; border-radius: 9px; background: var(--brand-ink); color: var(--brand); display: grid; place-items: center; font: 700 1.35rem/1 var(--font-display); flex: none; }
+.logo { width: 44px; height: 44px; border-radius: 11px; object-fit: cover; flex: none; box-shadow: 0 0 0 2px rgb(255 255 255 / 0.85); }
 .masthead h1 { margin: 0; font: 700 1.3rem/1.05 var(--font-display); letter-spacing: 0.01em; }
 .masthead p { margin: 2px 0 0; font-size: 0.85rem; opacity: 0.9; }
 .snap { font: 600 0.78rem/1 var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; padding: 8px 11px; border-radius: 999px; background: rgb(255 255 255 / 0.18); display: flex; gap: 8px; align-items: center; }
@@ -174,3 +174,14 @@ footer.wrap { padding-block: 12px 28px; font-size: 0.8rem; color: var(--muted); 
 .net-table tr.mine td:first-child { box-shadow: inset 3px 0 0 var(--brand); }
 .bar { display: inline-block; height: 8px; border-radius: 4px; background: var(--idle-bg); width: 120px; vertical-align: middle; overflow: hidden; }
 .bar i { display: block; height: 100%; border-radius: 4px; }
+
+/* Rellotge en directe i properes arribades */
+.live-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 28px; padding: 14px 18px 6px; }
+.clock-box { display: flex; align-items: center; gap: 12px; }
+.clock { font: 600 2.4rem/1 var(--font-mono); font-variant-numeric: tabular-nums; letter-spacing: -0.03em; }
+.arrivals { display: flex; flex-wrap: wrap; gap: 10px; min-width: 0; }
+.arr { display: grid; grid-template-columns: auto 1fr; gap: 2px 10px; align-items: center; padding: 8px 12px; border-radius: 12px; background: var(--surface-2); border: 1px solid var(--line); min-width: 0; }
+.arr .where { grid-column: 1 / -1; font: 600 0.7rem/1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.arr .eta { font: 600 1.15rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
+.arr .what { font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
+@media (max-width: 480px) { .clock { font-size: 2rem; } .arr { flex: 1 1 100%; } }

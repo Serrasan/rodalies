@@ -22,11 +22,50 @@ window.Rod = (() => {
     return r.json();
   }
 
+  let scheduleCache = null, scheduleAt = 0;
+
+  // Dades en directe: primer el Worker (cada 30 s), si no hi és o falla, el fitxer de GitHub (cada ~5 min)
   async function loadAll() {
-    const schedule = await getJSON("data/schedule.json");
+    if (!scheduleCache || Date.now() - scheduleAt > 10 * 60_000) {
+      scheduleCache = await getJSON("data/schedule.json");
+      scheduleAt = Date.now();
+    }
+    const schedule = scheduleCache;
     let live = null;
-    try { live = await getJSON("data/live.json"); } catch { /* només horaris */ }
+    if (window.ROD_LIVE_URL) {
+      try {
+        const ctl = new AbortController();
+        const timer = setTimeout(() => ctl.abort(), 8000);
+        const r = await fetch(window.ROD_LIVE_URL, { signal: ctl.signal, cache: "no-store" });
+        clearTimeout(timer);
+        if (r.ok) live = normalizeLive(schedule, await r.json());
+      } catch { /* es prova amb GitHub */ }
+    }
+    if (!live) {
+      try { live = normalizeLive(schedule, await getJSON("data/live.json")); } catch { /* només horaris */ }
+    }
     return { schedule, live };
+  }
+
+  // Les dues fonts fan servir els codis de tren de Renfe; aquí s'enllacen amb els trens de l'horari
+  // (pel codi exacte o, si el servei del dia té un altre prefix, pel número de tren + línia).
+  function normalizeLive(schedule, raw) {
+    if (!raw || raw.error) return null;
+    const today = dayKey(nowS());
+    const byId = new Map(schedule.trips.map((t) => [t.id, t]));
+    const byKey = new Map();
+    for (const t of schedule.trips) if (t.date === today || !byKey.has(t.key)) byKey.set(t.key, t);
+    const match = (id) => byId.get(id) || byKey.get(String(id).slice(5));
+    const remap = (obj) => {
+      const out = {};
+      for (const [id, v] of Object.entries(obj || {})) { const t = match(id); if (t) out[t.id] = v; }
+      return out;
+    };
+    const lines = new Set(schedule.trips.map((t) => t.line));
+    const stations = new Set([schedule.stations.A.id, schedule.stations.B.id]);
+    const alerts = (raw.alerts || []).filter((a) => (a.lines || []).some((l) => lines.has(l)) || (a.stops || []).some((s) => stations.has(s)))
+      .map((a) => ({ ...a, lines: (a.lines || []).filter((l) => lines.has(l)) }));
+    return { ...raw, trips: remap(raw.trips), vehicles: remap(raw.vehicles), alerts };
   }
 
   function stationsFor(schedule, dir) {

@@ -6,8 +6,8 @@
 <title>Els meus Rodalies</title>
 <meta name="theme-color" content="#f26a1b">
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="icon" href="icon.svg" type="image/svg+xml">
-<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="logo-192.jpg" type="image/jpeg">
+<link rel="apple-touch-icon" href="icon-512.jpg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Red+Hat+Mono:wght@500;600&display=swap">
@@ -17,7 +17,7 @@
 
 <header class="masthead">
   <div class="wrap">
-    <div class="logo" aria-hidden="true">R</div>
+    <img class="logo" src="logo-192.jpg" alt="" width="44" height="44">
     <div>
       <h1>Els meus Rodalies</h1>
       <p>Vila-seca ⇄ Barcelona-Passeig de Gràcia · R14 · R15 · R16</p>
@@ -35,10 +35,12 @@
       <h2 id="diag-title">Trens en moviment</h2>
       <span class="aside" id="diag-aside"></span>
     </div>
-    <div class="sim" aria-label="Rellotge">
-      <span class="live-dot" aria-hidden="true"></span>
-      <span class="sim-clock" id="sim-clock">--:--</span>
-      <span class="sim-count" id="sim-count"></span>
+    <div class="live-bar">
+      <div class="clock-box">
+        <span class="live-dot" id="live-dot" aria-hidden="true"></span>
+        <time class="clock" id="clock" aria-live="off">--:--:--</time>
+      </div>
+      <div class="arrivals" id="arrivals"></div>
     </div>
     <div class="diagram-scroll"><svg class="diagram" id="diagram" role="img" aria-label="Diagrama de la línia amb la posició dels trens"></svg></div>
     <div class="legend" id="legend"></div>
@@ -84,7 +86,9 @@
   Dades obertes de Renfe: horaris GTFS i GTFS en temps real (retards, posicions i avisos). Les dades s'actualitzen cada pocs minuts; entre actualitzacions, cada tren avança segons el seu horari i el retard que porta.
 </footer>
 
+<script src="live-config.js"></script>
 <script src="core.js"></script>
+<script src="diagram.js"></script>
 <script src="tauler.js"></script>
 </body>
 </html>

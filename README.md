@@ -18,6 +18,17 @@ Funciona sense servidor: una tasca de GitHub Actions baixa les dades obertes de 
 5. Quan acabi, l'adreça de l'app surt a Settings → Pages (del tipus `https://<el-teu-usuari>.github.io/rodalies/`).
 6. Al mòbil, obre l'adreça i fes *Afegeix a la pantalla d'inici* perquè quedi com una app.
 
+## Dades cada 30 segons (opcional, recomanat)
+
+GitHub només actualitza les dades cada ~5 minuts (sovint més). Per tenir-les al moment, publica l'intermediari gratuït de Cloudflare:
+
+1. Crea un compte gratuït a [dash.cloudflare.com](https://dash.cloudflare.com).
+2. Ves a **Workers & Pages → Create → Create Worker**, posa-li de nom `rodalies` i prem **Deploy**.
+3. Prem **Edit code**, esborra el que hi ha, enganxa-hi el contingut de `worker/worker.js` i prem **Deploy**.
+4. Copia l'adreça del Worker (del tipus `https://rodalies.el-teu-usuari.workers.dev`) i posa-la a `site/live-config.js`.
+
+A partir d'aquí l'app demana dades noves cada 30 segons. Si el Worker falla, torna sola a les dades de GitHub. El pla gratuït de Cloudflare admet 100.000 peticions al dia, molt més del que fa servir l'app.
+
 ## Com funciona
 
 | Fitxer | Què fa |
@@ -27,14 +38,17 @@ Funciona sense servidor: una tasca de GitHub Actions baixa les dades obertes de 
 | `scripts/fetch_live.py` | Cada execució baixa retards, posicions i avisos en temps real i es queda només amb els dels teus trens. |
 | `site/index.html`, `tauler.js`, `tauler.css` | El tauler principal. |
 | `site/mapa.html`, `app.js`, `style.css` | La vista de mapa. |
-| `site/core.js` | Lògica compartida: estat de cada tren, retards, format d'hores. |
+| `site/core.js` | Lògica compartida: càrrega de dades (Worker o GitHub), estat de cada tren, retards, format d'hores. |
+| `site/diagram.js` | El diagrama de la línia amb els trens en moviment i els comptes enrere. |
+| `site/live-config.js` | Adreça del Worker de Cloudflare (buida = només dades de GitHub). |
+| `worker/worker.js` | Intermediari de Cloudflare que serveix les dades de Renfe al moment. |
 | `.github/workflows/update.yml` | Executa els scripts cada 5 minuts i publica a GitHub Pages. |
 
 Per canviar de trajecte, edita `config.json` amb els codis d'estació de Renfe (per exemple Cambrils és `65422`, Barcelona-Sants `71801`).
 
 ## Limitacions
 
-- GitHub no garanteix l'hora exacta de les tasques programades: en hores punta de GitHub l'actualització pot arribar amb 10-15 minuts de retard. L'app sempre mostra l'hora de les dades.
+- Sense el Worker, GitHub no garanteix l'hora exacta de les tasques programades: l'actualització pot arribar amb 10-15 minuts de retard. L'app sempre mostra l'hora de les dades.
 - Els retards són els que publica Renfe: s'apliquen a la teva estació suposant que el tren manté el retard.
 - Al diagrama, cada tren avança segons el seu horari desplaçat pel retard conegut; amb cada actualització de dades es recol·loca. Els trens sense dades en directe surten translúcids.
 - En repositoris públics, GitHub atura les tasques programades després de 60 dies sense cap canvi al repositori. Si passa, només cal tornar a prémer *Run workflow* (o fer qualsevol canvi).
