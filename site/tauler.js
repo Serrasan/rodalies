@@ -88,7 +88,7 @@
     document.getElementById("arrivals").replaceChildren(...["A", "B"].map((k) => {
       const n = res.next[k];
       return el("div", { class: "arr" },
-        el("span", { class: "where" }, "Proper tren a " + s[k].short),
+        el("span", { class: "where" }, k === "A" ? `Surt de ${s.A.short} cap a ${s.B.short}` : `Surt de ${s.B.short} cap a ${s.A.short}`),
         el("span", { class: "eta" }, n ? diagram.mmss(n.eta - t) : "—"),
         el("span", { class: "what" }, n ? `${n.trip.line} ${n.trip.train} · ${hm(n.eta)}` + (n.delay > 60 ? ` (${fmtDelay(n.delay)})` : "") + (n.known ? "" : " · segons horari") : "Cap més avui"));
     }));

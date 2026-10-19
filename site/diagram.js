@@ -73,11 +73,11 @@ window.RodDiagram = function (svg, opts) {
       const st = statusOf(trip);
       if (st.canceled) continue;
       const delay = st.delay || 0;
-      // Propera arribada a les teves estacions
-      for (const key of ["A", "B"]) {
-        const s = trip.stops.find((x) => x[0] === opts[key].id);
-        if (!s) continue;
-        const eta = s[1] + delay;
+      // Propera sortida que pots agafar: de Vila-seca cap a Barcelona (A) i de Pg. de Gràcia cap a Vila-seca (B)
+      const key = trip.dir === "AB" ? "A" : "B";
+      const s = trip.stops.find((x) => x[0] === opts[key].id);
+      if (s) {
+        const eta = s[2] + delay;
         if (eta >= time && (!next[key] || eta < next[key].eta)) next[key] = { trip, eta, delay, known: st.known };
       }
       const w = where(trip, delay, time);
