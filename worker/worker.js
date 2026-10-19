@@ -5,6 +5,9 @@ const FEEDS = {
   tu: "https://gtfsrt.renfe.com/trip_updates.json",
   vp: "https://gtfsrt.renfe.com/vehicle_positions.json",
   al: "https://gtfsrt.renfe.com/alerts.json",
+  // Mitja distància: els Regional Exprés (mateixos trens que R14/R15/R16) de vegades només surten aquí
+  tuLD: "https://gtfsrt.renfe.com/trip_updates_LD.json",
+  vpLD: "https://gtfsrt.renfe.com/vehicle_positions_LD.json",
 };
 const CACHE_S = 20;          // Renfe actualitza cada ~30 s; una còpia de 20 s evita peticions repetides
 const LATE_S = 5 * 60;       // a partir de 5 minuts es compta com a tren amb retard
@@ -26,7 +29,7 @@ function text(o) {
 async function build() {
   const now = Math.floor(Date.now() / 1000);
   const out = { generated: now, source: "worker", feeds: {}, trips: {}, vehicles: {}, alerts: [], network: {}, errors: [] };
-  const [tu, vp, al] = await Promise.allSettled([feed(FEEDS.tu), feed(FEEDS.vp), feed(FEEDS.al)]);
+  const [tu, vp, al, tuLD, vpLD] = await Promise.allSettled([feed(FEEDS.tu), feed(FEEDS.vp), feed(FEEDS.al), feed(FEEDS.tuLD), feed(FEEDS.vpLD)]);
 
   if (tu.status === "fulfilled") {
     out.feeds.trip_updates = Number(tu.value.header?.timestamp || 0);
@@ -61,6 +64,30 @@ async function build() {
       out.vehicles[id] = { lat: +(+p.latitude).toFixed(6), lon: +(+p.longitude).toFixed(6), stop: v.stopId, status: v.currentStatus, ts: Number(v.timestamp || 0) };
     }
   } else out.errors.push("posicions: " + vp.reason);
+
+  // Mitja distància: codi "LD:<número de tren>" (l'app l'enllaça amb l'horari pel número)
+  if (tuLD.status === "fulfilled") {
+    for (const e of tuLD.value.entity || []) {
+      const u = e.tripUpdate || {}, trip = u.trip || {}, train = String(trip.tripId || "").slice(0, 5);
+      if (!/^\d{5}$/.test(train)) continue;
+      const info = { delay: null, canceled: trip.scheduleRelationship === "CANCELED", skipped: [], next: null, source: "ld" };
+      for (const s of u.stopTimeUpdate || []) {
+        if (s.scheduleRelationship === "SKIPPED") { info.skipped.push(s.stopId); continue; }
+        const ev = s.arrival || s.departure || {};
+        if (!info.next && s.stopId) info.next = { stop: s.stopId, time: ev.time ? Number(ev.time) : null };
+        if (info.delay == null && ev.delay != null) info.delay = Number(ev.delay);
+      }
+      if (info.delay == null && u.delay != null) info.delay = Number(u.delay);
+      out.trips["LD:" + train] = info;
+    }
+  } else out.errors.push("mitja distància: " + tuLD.reason);
+  if (vpLD.status === "fulfilled") {
+    for (const e of vpLD.value.entity || []) {
+      const v = e.vehicle || {}, train = String(v.trip?.tripId || "").slice(0, 5), p = v.position || {};
+      if (!/^\d{5}$/.test(train) || p.latitude == null) continue;
+      out.vehicles["LD:" + train] = { lat: +(+p.latitude).toFixed(6), lon: +(+p.longitude).toFixed(6), stop: v.stopId, status: v.currentStatus, ts: Number(v.timestamp || 0) || now };
+    }
+  }
 
   if (al.status === "fulfilled") {
     out.feeds.alerts = Number(al.value.header?.timestamp || 0);

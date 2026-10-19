@@ -55,10 +55,15 @@ window.Rod = (() => {
     const byId = new Map(schedule.trips.map((t) => [t.id, t]));
     const byKey = new Map();
     for (const t of schedule.trips) if (t.date === today || !byKey.has(t.key)) byKey.set(t.key, t);
-    const match = (id) => byId.get(id) || byKey.get(String(id).slice(5));
+    // Canal de mitja distància (Regional Exprés): codi "LD:<número de tren>", s'enllaça pel número de tren d'avui
+    const byTrain = new Map();
+    for (const t of schedule.trips) if (t.date === today || !byTrain.has(t.train)) byTrain.set(t.train, t);
+    const match = (id) => String(id).startsWith("LD:") ? byTrain.get(String(id).slice(3)) : (byId.get(id) || byKey.get(String(id).slice(5)));
     const remap = (obj) => {
       const out = {};
-      for (const [id, v] of Object.entries(obj || {})) { const t = match(id); if (t) out[t.id] = v; }
+      // primer Rodalies; el canal de mitja distància només omple els trens que hi falten
+      const entries = Object.entries(obj || {}).sort(([a], [b]) => (a.startsWith("LD:") - b.startsWith("LD:")));
+      for (const [id, v] of entries) { const t = match(id); if (t && !(t.id in out)) out[t.id] = v; }
       return out;
     };
     const lines = new Set(schedule.trips.map((t) => t.line));
@@ -114,16 +119,13 @@ window.Rod = (() => {
 
   // Retard mínim que es dedueix de l'última posició: aturat a una estació després de l'hora de sortida,
   // o encara de camí a una estació després de l'hora d'arribada
-  // Atenció: en marxa, Renfe dona l'última estació per on ha passat el tren (no la següent)
+  // Només quan el tren és ATURAT en una estació: si ja n'hauria d'haver sortit, aquest és el retard mínim.
+  // (En marxa no es fa servir: segons el canal de Renfe, l'estació que dona és l'anterior o la següent.)
   function inferDelay(trip, veh) {
-    if (!veh || !veh.stop || !veh.ts) return null;
-    const i = trip.stops.findIndex((x) => x[0] === veh.stop);
-    if (i < 0) return null;
-    let ref;
-    if (veh.status === "STOPPED_AT") ref = trip.stops[i][2];          // encara aturat: havia de sortir a aquesta hora
-    else if (i + 1 < trip.stops.length) ref = trip.stops[i + 1][1];   // en marxa: encara no ha arribat a la següent
-    else return null;
-    const d = veh.ts - ref;
+    if (!veh || !veh.stop || !veh.ts || veh.status !== "STOPPED_AT") return null;
+    const s = trip.stops.find((x) => x[0] === veh.stop);
+    if (!s) return null;
+    const d = veh.ts - s[2];
     return d > 60 ? d : null;
   }
 

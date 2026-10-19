@@ -128,6 +128,48 @@ def main():
     except Exception as e:  # noqa: BLE001
         out["errors"].append(f"posicions: {e}")
 
+    # Canal de mitja distància: els Regional Exprés són els mateixos trens (mateix número) i de vegades
+    # només surten aquí. Omple els que falten al canal de Rodalies. Codi del tren: els 5 primers dígits.
+    by_train = {}
+    for t in SCHEDULE["trips"]:
+        if t["date"] == today or t["train"] not in by_train:
+            by_train[t["train"]] = t
+    try:
+        tu_ld = get_json(CONFIG["rt"]["trip_updates_ld"])
+        for e in tu_ld.get("entity", []):
+            u = e.get("tripUpdate") or {}
+            trip = u.get("trip") or {}
+            t = by_train.get(str(trip.get("tripId") or "")[:5])
+            if not t or t["id"] in out["trips"]:
+                continue
+            info = {"delay": None, "canceled": trip.get("scheduleRelationship") == "CANCELED", "skipped": [], "next": None, "source": "ld"}
+            for s in u.get("stopTimeUpdate") or []:
+                if s.get("scheduleRelationship") == "SKIPPED":
+                    info["skipped"].append(s.get("stopId"))
+                    continue
+                ev = s.get("arrival") or s.get("departure") or {}
+                if info["next"] is None and s.get("stopId"):
+                    info["next"] = {"stop": s.get("stopId"), "time": int(ev["time"]) if ev.get("time") else None}
+                if info["delay"] is None and ev.get("delay") is not None:
+                    info["delay"] = int(ev["delay"])
+            if info["delay"] is None and u.get("delay") is not None:
+                info["delay"] = int(u["delay"])
+            out["trips"][t["id"]] = info
+        vp_ld = get_json(CONFIG["rt"]["vehicle_positions_ld"])
+        for e in vp_ld.get("entity", []):
+            v = e.get("vehicle") or {}
+            t = by_train.get(str((v.get("trip") or {}).get("tripId") or "")[:5])
+            pos = v.get("position") or {}
+            if not t or t["id"] in out["vehicles"] or pos.get("latitude") is None:
+                continue
+            out["vehicles"][t["id"]] = {
+                "lat": round(float(pos["latitude"]), 6), "lon": round(float(pos["longitude"]), 6),
+                "stop": v.get("stopId"), "status": v.get("currentStatus"),
+                "ts": int(v.get("timestamp", 0) or 0) or out["generated"],
+            }
+    except Exception as e:  # noqa: BLE001
+        out["errors"].append(f"mitja distància: {e}")
+
     try:
         al = get_json(CONFIG["rt"]["alerts"])
         out["feeds"]["alerts"] = int(al.get("header", {}).get("timestamp", 0))

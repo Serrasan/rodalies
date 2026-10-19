@@ -9,6 +9,8 @@
   "rt": {
     "trip_updates": "https://gtfsrt.renfe.com/trip_updates.json",
     "vehicle_positions": "https://gtfsrt.renfe.com/vehicle_positions.json",
-    "alerts": "https://gtfsrt.renfe.com/alerts.json"
+    "alerts": "https://gtfsrt.renfe.com/alerts.json",
+    "trip_updates_ld": "https://gtfsrt.renfe.com/trip_updates_LD.json",
+    "vehicle_positions_ld": "https://gtfsrt.renfe.com/vehicle_positions_LD.json"
   }
 }
