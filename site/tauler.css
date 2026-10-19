@@ -185,3 +185,6 @@ footer.wrap { padding-block: 12px 28px; font-size: 0.8rem; color: var(--muted); 
 .arr .eta { font: 600 1.15rem/1 var(--font-mono); font-variant-numeric: tabular-nums; }
 .arr .what { font-size: 0.82rem; color: var(--muted); overflow-wrap: anywhere; }
 @media (max-width: 480px) { .clock { font-size: 2rem; } .arr { flex: 1 1 100%; } }
+
+.sub a.gps { color: var(--brand); font-weight: 600; text-decoration: none; white-space: nowrap; }
+.sub a.gps:hover { text-decoration: underline; }
