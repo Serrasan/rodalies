@@ -24,6 +24,7 @@ window.RodDiagram = function (svg, opts) {
   };
   const mmss = (s) => { s = Math.max(0, Math.round(s)); const m = Math.floor(s / 60); return m >= 60 ? `${Math.floor(m / 60)} h ${m % 60} min` : `${m}:${String(s % 60).padStart(2, "0")}`; };
   const shortName = (sid) => SHORT[sid] || name(sid);
+  const hhmm = new Intl.DateTimeFormat("ca-ES", { timeZone: "Europe/Madrid", hour: "2-digit", minute: "2-digit" });
   // Enllaç a Google Maps amb la posició GPS real (al mòbil obre l'app de mapes)
   const gpsUrl = (g) => `https://www.google.com/maps/search/?api=1&query=${g.lat},${g.lon}`;
 
@@ -92,24 +93,30 @@ window.RodDiagram = function (svg, opts) {
         const { trip, w } = it;
         const head = `${trip.line} ${trip.train}`;
         const dl = it.delay > 60 ? `+${Math.round(it.delay / 60) >= 60 ? Math.floor(Math.round(it.delay / 60) / 60) + " h " + (Math.round(it.delay / 60) % 60) + " min" : Math.round(it.delay / 60) + " min"}` : "";
+        const dest = trip.dir === "AB" ? B : A;
+        const ds = trip.stops.find((x) => x[0] === dest.id);
+        const etaDest = ds ? ds[1] + it.delay : null;
+        const arrive = etaDest && etaDest >= time ? `Arriba a ${dest.short} ${hhmm.format(new Date(etaDest * 1000))}` : "";
         const sub = w.stopped ? `Aturat a ${shortName(w.at)} · surt en ${mmss(w.left)}` : `→ ${shortName(w.to)} en ${mmss(w.left)}`;
-        const wbox = Math.max((head.length + dl.length) * 8 + (dl ? 44 : 34), sub.length * 6.4 + 22 + (it.gps ? 44 : 0));
+        const wbox = Math.max((head.length + dl.length) * 8 + (dl ? 44 : 34), sub.length * 6.4 + 22 + (it.gps ? 44 : 0), arrive.length * 6.6 + 22);
+        const bh = arrive ? 54 : 38; // alçada de l'etiqueta
         const bx = Math.min(Math.max(it.x - wbox / 2, 6), W - wbox - 6);
         let lane = lanesEnd.findIndex((end) => end < bx - 6);
         if (lane < 0) lane = lanesEnd.length;
         lanesEnd[lane] = bx + wbox;
-        const y = up ? Y - 66 - lane * 46 : Y + 66 + lane * 46;
-        minY = Math.min(minY, y - 26); maxY = Math.max(maxY, y + 26);
+        const y = up ? Y - 74 - lane * 62 : Y + 74 + lane * 62;
+        minY = Math.min(minY, y - 34); maxY = Math.max(maxY, y + bh);
         const parent = it.gps ? mk(layer, "a", { href: gpsUrl(it.gps), target: "_blank", rel: "noopener", class: "rd-link" }) : layer;
         const g = mk(parent, "g", { opacity: it.known ? 1 : 0.5 });
-        mk(g, "line", { x1: it.x, y1: Y, x2: it.x, y2: up ? y + 19 : y - 19, stroke: trip.color, "stroke-width": 2, "stroke-dasharray": "3 3" });
+        mk(g, "line", { x1: it.x, y1: Y, x2: it.x, y2: up ? y - 19 + bh : y - 19, stroke: trip.color, "stroke-width": 2, "stroke-dasharray": "3 3" });
         if (!w.stopped && it.known) mk(g, "circle", { class: "rd-pulse", cx: it.x, cy: Y, r: 8, fill: trip.color });
         mk(g, "circle", { cx: it.x, cy: Y, r: 8, fill: w.stopped ? "var(--surface)" : trip.color, stroke: trip.color, "stroke-width": w.stopped ? 4 : 2.5 });
-        mk(g, "rect", { x: bx, y: y - 19, width: wbox, height: 38, rx: 8, fill: trip.color });
+        mk(g, "rect", { x: bx, y: y - 19, width: wbox, height: bh, rx: 8, fill: trip.color });
         mk(g, "text", { x: bx + 9, y: y - 3, fill: "#fff", "font-size": 13.5, "font-weight": 700 }, (up ? "" : "← ") + head + (up ? " →" : ""));
         if (it.gps) mk(g, "text", { x: bx + wbox - 9, y: y + 13, "text-anchor": "end", fill: "#fff", "font-size": 10.5, "font-weight": 700, "letter-spacing": "0.04em" }, "GPS ↗");
         if (dl) mk(g, "text", { x: bx + wbox - 9, y: y - 3, "text-anchor": "end", fill: "#fff", "font-size": 12.5, "font-weight": 700 }, dl);
         mk(g, "text", { x: bx + 9, y: y + 13, fill: "#fff", "fill-opacity": 0.9, "font-size": 11.5, "font-weight": 500, "font-family": "var(--font-mono)" }, sub);
+        if (arrive) mk(g, "text", { x: bx + 9, y: y + 29, fill: "#fff", "font-size": 12, "font-weight": 700 }, arrive);
         mk(g, "title", {}, `${head} cap a ${name(trip.to)}` + (it.known ? (dl ? ` · ${dl}` : " · a l'hora") : " · sense dades en directe (segons horari)") + (it.gps ? " · toca per veure la posició GPS real" : ""));
       }
     }
