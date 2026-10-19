@@ -87,15 +87,24 @@ window.Rod = (() => {
     if (info?.skipped?.includes(o.id)) return { ...st, kind: "bad", label: "No para aquí", canceled: true };
     if (info?.skipped?.includes(d.id)) return { ...st, kind: "bad", label: "No para al destí", canceled: true };
 
-    if (info && info.delay != null) {
-      st.delay = info.delay;
-      st.est = trip.dep + info.delay;
-      st.estArr = trip.arr + info.delay;
-      const m = Math.round(info.delay / 60);
+    // Retard: el que publica Renfe o, si és més gran, el que es dedueix de la posició del tren
+    // (si encara és aturat en una estació de la qual ja havia de sortir, o no hi ha arribat a l'hora)
+    const reported = info && info.delay != null ? info.delay : null;
+    const inferred = inferDelay(trip, veh);
+    const delay = inferred != null && inferred > (reported ?? 0) + 60 ? inferred : reported;
+    if (delay != null) {
+      st.delay = delay;
+      st.inferred = delay !== reported;
+      st.est = trip.dep + delay;
+      st.estArr = trip.arr + delay;
+      const m = Math.round(delay / 60);
       if (m <= 1) { st.kind = "ok"; st.label = m < 0 ? "Avançat" : "A l'hora"; }
-      else { st.kind = m >= 10 ? "bad" : "warn"; st.label = fmtDelay(info.delay); }
+      else { st.kind = m >= 10 ? "bad" : "warn"; st.label = fmtDelay(delay); }
     } else if (veh) {
       st.kind = "ok"; st.label = "En circulació";
+    } else if (nowS() > trip.dep + PAST_GRACE_S) {
+      // Ja hauria d'haver passat per la teva estació i Renfe no en diu res: pot ser que no hagi sortit
+      st.kind = "warn"; st.label = "Sense notícies"; st.noNews = true;
     }
 
     // Si la propera parada (o on és el tren) ja és després de l'origen, el tren ja ha passat
@@ -103,12 +112,25 @@ window.Rod = (() => {
     return st;
   }
 
+  // Retard mínim que es dedueix de l'última posició: aturat a una estació després de l'hora de sortida,
+  // o encara de camí a una estació després de l'hora d'arribada
+  function inferDelay(trip, veh) {
+    if (!veh || !veh.stop || !veh.ts) return null;
+    const s = trip.stops.find((x) => x[0] === veh.stop);
+    if (!s) return null;
+    const ref = veh.status === "STOPPED_AT" ? s[2] : s[1];
+    const d = veh.ts - ref;
+    return d > 60 ? d : null;
+  }
+
+  const NO_NEWS_KEEP_S = 60 * 60; // un tren "sense notícies" es manté a la llista fins a 1 hora
+
   function upcoming(schedule, live, dir, max) {
     const t0 = nowS();
     return schedule.trips
       .filter((t) => t.dir === dir)
       .map((trip) => ({ trip, st: trainStatus(schedule, live, trip) }))
-      .filter(({ st }) => !st.passed && st.est >= t0 - PAST_GRACE_S)
+      .filter(({ st }) => !st.passed && (st.est >= t0 - PAST_GRACE_S || (st.noNews && st.est >= t0 - NO_NEWS_KEEP_S)))
       .sort((a, b) => a.st.est - b.st.est)
       .slice(0, max);
   }

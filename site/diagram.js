@@ -96,7 +96,8 @@ window.RodDiagram = function (svg, opts) {
         const dest = trip.dir === "AB" ? B : A;
         const ds = trip.stops.find((x) => x[0] === dest.id);
         const etaDest = ds ? ds[1] + it.delay : null;
-        const arrive = etaDest && etaDest >= time ? `Arriba a ${dest.short} ${hhmm.format(new Date(etaDest * 1000))}` : "";
+        const lateTxt = it.delay > 60 ? ` (${dl})` : (it.known ? " (a l'hora)" : "");
+        const arrive = etaDest && etaDest >= time ? `Arriba a ${dest.short} ${hhmm.format(new Date(etaDest * 1000))}${lateTxt}` : "";
         const sub = w.stopped ? `Aturat a ${shortName(w.at)} · surt en ${mmss(w.left)}` : `→ ${shortName(w.to)} en ${mmss(w.left)}`;
         const wbox = Math.max((head.length + dl.length) * 8 + (dl ? 44 : 34), sub.length * 6.4 + 22 + (it.gps ? 44 : 0), arrive.length * 6.6 + 22);
         const bh = arrive ? 54 : 38; // alçada de l'etiqueta
