@@ -1,4 +1,4 @@
-# Els meus Rodalies
+# Rodalies
 
 App web per veure, des del mòbil, els trens de Rodalies entre **Vila-seca** i **Barcelona-Passeig de Gràcia** (en els dos sentits):
 
