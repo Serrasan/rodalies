@@ -1,0 +1,12 @@
+{
+  "name": "Els meus Rodalies",
+  "short_name": "Rodalies",
+  "lang": "ca",
+  "start_url": "./",
+  "display": "standalone",
+  "background_color": "#f6f3ef",
+  "theme_color": "#e85a12",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}

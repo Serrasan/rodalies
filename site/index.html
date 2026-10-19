@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Els meus Rodalies</title>
+<meta name="theme-color" content="#f26a1b">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Red+Hat+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="tauler.css">
+</head>
+<body>
+
+<header class="masthead">
+  <div class="wrap">
+    <div class="logo" aria-hidden="true">R</div>
+    <div>
+      <h1>Els meus Rodalies</h1>
+      <p>Vila-seca ⇄ Barcelona-Passeig de Gràcia · R14 · R15 · R16</p>
+    </div>
+    <a class="maplink" href="mapa.html">Mapa del tren</a>
+    <div class="snap" id="snap"><span class="pulse" aria-hidden="true"></span><span id="snap-text">Carregant…</span></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <section class="summary" id="summary" aria-label="Resum"></section>
+
+  <section class="panel" aria-labelledby="diag-title">
+    <div class="panel-head">
+      <h2 id="diag-title">Trens en moviment</h2>
+      <span class="aside" id="diag-aside"></span>
+    </div>
+    <div class="sim" aria-label="Rellotge">
+      <span class="live-dot" aria-hidden="true"></span>
+      <span class="sim-clock" id="sim-clock">--:--</span>
+      <span class="sim-count" id="sim-count"></span>
+    </div>
+    <div class="diagram-scroll"><svg class="diagram" id="diagram" role="img" aria-label="Diagrama de la línia amb la posició dels trens"></svg></div>
+    <div class="legend" id="legend"></div>
+  </section>
+
+  <div class="dir-toggle" role="group" aria-label="Sentit">
+    <button type="button" id="t-AB" aria-pressed="true">Des de Vila-seca</button>
+    <button type="button" id="t-BA" aria-pressed="false">Des de Pg. de Gràcia</button>
+  </div>
+
+  <div class="boards" id="boards" data-show="AB">
+    <section class="panel" data-dir="AB" aria-labelledby="h-AB">
+      <div class="panel-head"><h2 id="h-AB">Vila-seca <span class="arrow">→</span> Pg. de Gràcia</h2><span class="aside">Sortides de Vila-seca</span></div>
+      <ol class="rows" id="rows-AB"></ol>
+    </section>
+    <section class="panel" data-dir="BA" aria-labelledby="h-BA">
+      <div class="panel-head"><h2 id="h-BA">Pg. de Gràcia <span class="arrow">→</span> Vila-seca</h2><span class="aside">Sortides de Passeig de Gràcia</span></div>
+      <ol class="rows" id="rows-BA"></ol>
+    </section>
+  </div>
+
+  <section class="panel" aria-labelledby="net-title">
+    <div class="panel-head"><h2 id="net-title">Com van els trens</h2><span class="aside" id="net-aside">Tota la xarxa de Rodalies</span></div>
+    <div class="net" id="net"></div>
+    <p class="note" id="net-note"></p>
+  </section>
+
+  <section class="panel" aria-labelledby="al-title" id="alerts-panel">
+    <div class="panel-head"><h2 id="al-title">Avisos del servei</h2><span class="aside" id="al-aside"></span></div>
+    <div class="alerts" id="alerts"></div>
+    <p class="note" id="al-note"></p>
+    <nav class="xlinks" aria-label="Comptes de les línies a X">
+      <span class="xlabel">Última hora a X</span>
+      <a href="https://x.com/rod14cat" target="_blank" rel="noopener"><span class="badge" style="background:#6C60A8">R14</span>@rod14cat</a>
+      <a href="https://x.com/rod15cat" target="_blank" rel="noopener"><span class="badge" style="background:#978571">R15</span>@rod15cat</a>
+      <a href="https://x.com/rod16cat" target="_blank" rel="noopener"><span class="badge" style="background:#B52B46">R16</span>@rod16cat</a>
+      <a href="https://x.com/rodalies" target="_blank" rel="noopener"><span class="badge xgen">R</span>@rodalies</a>
+    </nav>
+  </section>
+</main>
+
+<footer class="wrap">
+  Dades obertes de Renfe: horaris GTFS i GTFS en temps real (retards, posicions i avisos). Les dades s'actualitzen cada pocs minuts; entre actualitzacions, cada tren avança segons el seu horari i el retard que porta.
+</footer>
+
+<script src="core.js"></script>
+<script src="tauler.js"></script>
+</body>
+</html>

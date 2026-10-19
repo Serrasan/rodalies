@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="ca">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Mapa del tren</title>
+<meta name="theme-color" content="#f6f3ef" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#14181d" media="(prefers-color-scheme: dark)">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Semi+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=Red+Hat+Mono:wght@500;600&display=swap">
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="top">
+  <div class="brand"><span class="dot" aria-hidden="true"></span>Rodalies · el meu trajecte <a class="back" href="./">← Tauler</a></div>
+  <div class="dir" role="tablist" aria-label="Sentit del viatge">
+    <button role="tab" id="dir-AB" data-dir="AB" aria-selected="true"></button>
+    <button role="tab" id="dir-BA" data-dir="BA" aria-selected="false"></button>
+  </div>
+  <p class="fresh" id="fresh">Carregant dades…</p>
+</header>
+
+<main>
+  <section id="alerts" class="alerts" aria-label="Incidències" hidden></section>
+
+  <nav class="xlinks" aria-label="Comptes de les línies a X">
+    <span class="xlabel">Última hora a X</span>
+    <a href="https://x.com/rod14cat" target="_blank" rel="noopener"><span class="badge" style="background:#6C60A8">R14</span>@rod14cat</a>
+    <a href="https://x.com/rod15cat" target="_blank" rel="noopener"><span class="badge" style="background:#978571">R15</span>@rod15cat</a>
+    <a href="https://x.com/rod16cat" target="_blank" rel="noopener"><span class="badge" style="background:#B52B46">R16</span>@rod16cat</a>
+    <a href="https://x.com/rodalies" target="_blank" rel="noopener"><span class="badge xgen">R</span>@rodalies</a>
+  </nav>
+
+  <section class="board" aria-labelledby="board-title">
+    <div class="board-head">
+      <h1 id="board-title">Propers trens</h1>
+      <span class="board-sub" id="board-sub"></span>
+    </div>
+    <ol id="list" class="list"></ol>
+    <p id="empty" class="empty" hidden>No hi ha més trens programats per avui ni demà en aquest sentit.</p>
+  </section>
+
+  <section class="mapwrap" aria-labelledby="map-title">
+    <div class="board-head">
+      <h2 id="map-title">On és el tren</h2>
+      <span class="board-sub" id="map-sub">Toca un tren de la llista</span>
+    </div>
+    <div id="map" class="map" role="img" aria-label="Mapa amb la posició del tren"></div>
+    <p class="map-note" id="map-note"></p>
+  </section>
+</main>
+
+<footer class="foot">
+  Dades obertes de Renfe (horaris i GTFS en temps real). S'actualitzen cada 5 minuts aproximadament; els retards són estimacions de Renfe.
+</footer>
+
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="core.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

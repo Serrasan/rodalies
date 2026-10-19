@@ -1,0 +1,14 @@
+{
+  "stations": {
+    "A": { "id": "71401", "name": "Vila-seca", "short": "Vila-seca" },
+    "B": { "id": "71802", "name": "Barcelona-Passeig de Gràcia", "short": "Pg. de Gràcia" }
+  },
+  "days": 2,
+  "timezone": "Europe/Madrid",
+  "gtfs_url": "https://ssl.renfe.com/ftransit/Fichero_CER_FOMENTO/fomento_transit.zip",
+  "rt": {
+    "trip_updates": "https://gtfsrt.renfe.com/trip_updates.json",
+    "vehicle_positions": "https://gtfsrt.renfe.com/vehicle_positions.json",
+    "alerts": "https://gtfsrt.renfe.com/alerts.json"
+  }
+}
