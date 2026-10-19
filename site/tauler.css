@@ -241,3 +241,18 @@ footer.wrap { padding-block: 12px 28px; font-size: 0.8rem; color: var(--muted); 
   .alert { padding: 12px 14px; }
   .xlinks { padding: 10px 14px 14px; }
 }
+
+/* Botó d'actualitzar i avís de dades velles */
+.refresh { display: inline-flex; align-items: center; gap: 6px; border: 0; cursor: pointer; border-radius: 999px; padding: 8px 13px;
+  background: var(--brand-ink); color: var(--brand); font: 700 0.85rem/1 var(--font-display); letter-spacing: 0.03em; }
+.refresh:hover { filter: brightness(0.95); }
+.refresh:disabled { opacity: 0.7; cursor: progress; }
+.refresh-icon { font-size: 1.05rem; line-height: 1; display: inline-block; }
+.refresh.busy .refresh-icon { animation: spin 0.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) { .refresh.busy .refresh-icon { animation: none; } }
+.refresh.done { background: var(--ok-bg); color: var(--ok); }
+.stale-bar { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; padding-block: 8px; font-size: 0.82rem;
+  background: var(--warn-bg); color: var(--warn); }
+.stale-bar a { color: inherit; font-weight: 700; }
+@media (max-width: 640px) { .refresh { padding: 7px 10px; font-size: 0.78rem; } .refresh-label { display: none; } }

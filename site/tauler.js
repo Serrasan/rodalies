@@ -19,6 +19,11 @@
       : "Només horaris";
     snap.classList.toggle("stale", f.stale);
     snap.title = f.text;
+    // Avís si les dades són velles (GitHub de vegades s'endarrereix)
+    const age = state.live ? Math.round((nowS() - state.live.generated) / 60) : null;
+    const bar = document.getElementById("stale-bar");
+    bar.hidden = !(age != null && age > 10 && state.live.source !== "worker");
+    if (!bar.hidden) document.getElementById("stale-text").textContent = `Les dades són de fa ${age >= 60 ? Math.floor(age / 60) + " h " + (age % 60) + " min" : age + " min"}: GitHub encara no les ha renovat.`;
   }
 
   function lineColor(line) {
@@ -185,6 +190,21 @@
       if (!state.schedule) document.getElementById("snap-text").textContent = "No s'han pogut carregar les dades";
     }
   }
+
+  // Botó d'actualitzar: torna a demanar les dades ara mateix
+  const btn = document.getElementById("refresh");
+  btn.addEventListener("click", async () => {
+    const before = state.live?.generated;
+    btn.disabled = true; btn.classList.add("busy");
+    await refresh();
+    btn.disabled = false; btn.classList.remove("busy");
+    const label = btn.querySelector(".refresh-label");
+    const fresh = state.live?.generated !== before;
+    btn.classList.add("done");
+    label.textContent = fresh ? "Dades noves" : "Ja és l'última";
+    btn.setAttribute("aria-label", fresh ? "Dades actualitzades" : "No hi ha dades més noves");
+    setTimeout(() => { btn.classList.remove("done"); label.textContent = "Actualitza"; btn.setAttribute("aria-label", "Actualitza les dades"); }, 2500);
+  });
 
   // Sentit a mòbil
   const boards = document.getElementById("boards");
