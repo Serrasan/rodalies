@@ -255,4 +255,21 @@ footer.wrap { padding-block: 12px 28px; font-size: 0.8rem; color: var(--muted); 
 .stale-bar { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: center; padding-block: 8px; font-size: 0.82rem;
   background: var(--warn-bg); color: var(--warn); }
 .stale-bar a { color: inherit; font-weight: 700; }
+.stale-bar[hidden] { display: none; }
 @media (max-width: 640px) { .refresh { padding: 7px 10px; font-size: 0.78rem; } .refresh-label { display: none; } }
+
+/* Tria d'estacions */
+.route-pick { display: flex; align-items: center; gap: 10px 14px; flex-wrap: wrap; background: var(--surface); border-radius: 16px; box-shadow: var(--shadow); padding: 10px 14px; }
+.rp-group { display: flex; align-items: center; gap: 10px; min-width: 0; }
+.rp-label { font: 600 0.72rem/1.1 var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); white-space: nowrap; }
+.seg { display: inline-grid; grid-auto-flow: column; grid-auto-columns: 1fr; gap: 3px; background: var(--idle-bg); padding: 3px; border-radius: 11px; }
+.seg button { border: 0; background: transparent; border-radius: 8px; padding: 8px 14px; font: 600 0.95rem/1.1 var(--font-display); color: var(--muted); cursor: pointer; white-space: nowrap; }
+.seg button:hover { color: var(--ink); }
+.seg button[aria-pressed="true"] { background: var(--brand); color: var(--brand-ink); box-shadow: var(--shadow); }
+.rp-swap { color: var(--brand); font-weight: 700; font-size: 1.2rem; }
+@media (max-width: 640px) {
+  .route-pick { order: 0; display: grid; grid-template-columns: 1fr; gap: 8px; padding: 10px 12px; border-radius: 14px; }
+  .rp-group { display: grid; grid-template-columns: 6.6rem 1fr; gap: 8px; }
+  .rp-swap { display: none; }
+  .seg button { padding: 8px 6px; font-size: 0.92rem; }
+}

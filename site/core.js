@@ -22,7 +22,48 @@ window.Rod = (() => {
     return r.json();
   }
 
-  let scheduleCache = null, scheduleAt = 0;
+  let scheduleCache = null, scheduleAt = 0, rawLive = null;
+
+  // ---------- estacions triades ----------
+  // L'horari porta els trens de totes les estacions possibles (Vila-seca o Cambrils, Pg. de Gràcia o Sants);
+  // l'app es queda amb els que paren a les dues estacions triades. La tria es recorda en aquest navegador.
+  const SEL_KEY = "rod.estacions";
+  function options(raw) {
+    return raw.options || { A: [raw.stations.A], B: [raw.stations.B] };
+  }
+  function getSelection(raw) {
+    const opt = options(raw);
+    let saved = {};
+    try { saved = JSON.parse(localStorage.getItem(SEL_KEY) || "{}"); } catch { /* sense memòria */ }
+    const q = new URLSearchParams(location.search); // també es pot triar amb ?A=65422&B=71801
+    const pick = (side) => opt[side].find((s) => s.id === (q.get(side) || saved[side])) || opt[side].find((s) => s.id === raw.stations[side].id) || opt[side][0];
+    return { A: pick("A"), B: pick("B") };
+  }
+  function setSelection(a, b) {
+    try { localStorage.setItem(SEL_KEY, JSON.stringify({ A: a, B: b })); } catch { /* sense memòria */ }
+    const u = new URL(location.href);
+    if (u.searchParams.has("A") || u.searchParams.has("B")) { u.searchParams.delete("A"); u.searchParams.delete("B"); history.replaceState(null, "", u); }
+  }
+  // Horari del parell triat: només els trens que paren a les dues estacions, amb la sortida i l'arribada d'aquestes
+  function applyStations(raw, sel) {
+    const trips = [];
+    for (const t of raw.trips) {
+      const ia = t.stops.findIndex((x) => x[0] === sel.A.id);
+      const ib = t.stops.findIndex((x) => x[0] === sel.B.id);
+      if (ia < 0 || ib < 0) continue;
+      const dir = ia < ib ? "AB" : "BA";
+      const [io, id] = dir === "AB" ? [ia, ib] : [ib, ia];
+      trips.push({ ...t, dir, dep: t.stops[io][2], arr: t.stops[id][1] });
+    }
+    trips.sort((x, y) => x.dep - y.dep);
+    return { ...raw, stations: { A: sel.A, B: sel.B }, options: options(raw), trips };
+  }
+  // Torna a muntar les dades amb la tria actual (sense tornar a baixar res)
+  function current() {
+    if (!scheduleCache) return null;
+    const schedule = applyStations(scheduleCache, getSelection(scheduleCache));
+    return { schedule, live: rawLive ? normalizeLive(schedule, rawLive) : null };
+  }
 
   // Dades en directe: primer el Worker (cada 30 s), si no hi és o falla, el fitxer de GitHub (cada ~5 min)
   async function loadAll() {
@@ -30,21 +71,21 @@ window.Rod = (() => {
       scheduleCache = await getJSON("data/schedule.json");
       scheduleAt = Date.now();
     }
-    const schedule = scheduleCache;
-    let live = null;
+    let raw = null;
     if (window.ROD_LIVE_URL) {
       try {
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), 8000);
         const r = await fetch(window.ROD_LIVE_URL, { signal: ctl.signal, cache: "no-store" });
         clearTimeout(timer);
-        if (r.ok) live = normalizeLive(schedule, await r.json());
+        if (r.ok) { raw = await r.json(); if (raw?.error) raw = null; }
       } catch { /* es prova amb GitHub */ }
     }
-    if (!live) {
-      try { live = normalizeLive(schedule, await getJSON("data/live.json")); } catch { /* només horaris */ }
+    if (!raw) {
+      try { raw = await getJSON("data/live.json"); } catch { /* només horaris */ }
     }
-    return { schedule, live };
+    rawLive = raw;
+    return current();
   }
 
   // Les dues fonts fan servir els codis de tren de Renfe; aquí s'enllacen amb els trens de l'horari
@@ -215,5 +256,5 @@ window.Rod = (() => {
     return where ? `${verb} ${where}` : "Posició del tren";
   }
 
-  return { TZ, fmtDelay, hm, dayLabel, dayKey, nowS, getJSON, loadAll, stationsFor, trainStatus, upcoming, countdown, freshness, el, alertNode, makeMap, dotIcon, stationMarkers, vehicleText };
+  return { getSelection, setSelection, current, options, TZ, fmtDelay, hm, dayLabel, dayKey, nowS, getJSON, loadAll, stationsFor, trainStatus, upcoming, countdown, freshness, el, alertNode, makeMap, dotIcon, stationMarkers, vehicleText };
 })();

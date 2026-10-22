@@ -1,7 +1,41 @@
 {
   "stations": {
-    "A": { "id": "71401", "name": "Vila-seca", "short": "Vila-seca" },
-    "B": { "id": "71802", "name": "Barcelona-Passeig de Gràcia", "short": "Pg. de Gràcia" }
+    "A": {
+      "id": "71401",
+      "name": "Vila-seca",
+      "short": "Vila-seca"
+    },
+    "B": {
+      "id": "71802",
+      "name": "Barcelona-Passeig de Gràcia",
+      "short": "Pg. de Gràcia"
+    }
+  },
+  "options": {
+    "A": [
+      {
+        "id": "71401",
+        "name": "Vila-seca",
+        "short": "Vila-seca"
+      },
+      {
+        "id": "65422",
+        "name": "Cambrils",
+        "short": "Cambrils"
+      }
+    ],
+    "B": [
+      {
+        "id": "71802",
+        "name": "Barcelona-Passeig de Gràcia",
+        "short": "Pg. de Gràcia"
+      },
+      {
+        "id": "71801",
+        "name": "Barcelona-Sants",
+        "short": "Sants"
+      }
+    ]
   },
   "days": 2,
   "timezone": "Europe/Madrid",

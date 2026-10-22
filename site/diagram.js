@@ -7,11 +7,13 @@
 // A pantalla ampla la via és horitzontal; al mòbil (menys de 640 px) és vertical, de nord (dalt) a sud.
 window.RodDiagram = function (svg, opts) {
   "use strict";
-  const CORRIDOR = ["71400", "71401", "71500", "71502", "71503", "71600", "71700", "71801", "71802", "79400"];
-  const SHORT = { "71400": "Reus", "71401": "Vila-seca", "71500": "Tarragona", "71502": "Altafulla", "71503": "Torredembarra", "71600": "St. Vicenç", "71700": "Vilanova", "71801": "Sants", "71802": "Pg. de Gràcia", "79400": "França" };
-  const SOUTH = -0.8; // estacions fora del tram (Cambrils, Tortosa, Móra, la Plana...): entren pel sud
-  const NS = "http://www.w3.org/2000/svg";
   const { A, B, name } = opts;
+  // Tram dibuixat: des de Reus o, si la teva estació és Cambrils, des de Cambrils (són branques diferents cap a Vila-seca)
+  const CAMBRILS = "65422";
+  const CORRIDOR = [A.id === CAMBRILS ? CAMBRILS : "71400", "71401", "71500", "71502", "71503", "71600", "71700", "71801", "71802", "79400"];
+  const SHORT = { "65422": "Cambrils", "71400": "Reus", "71401": "Vila-seca", "71500": "Tarragona", "71502": "Altafulla", "71503": "Torredembarra", "71600": "St. Vicenç", "71700": "Vilanova", "71801": "Sants", "71802": "Pg. de Gràcia", "79400": "França" };
+  const SOUTH = -0.8; // estacions fora del tram (Cambrils o Reus, Tortosa, Móra, la Plana...): entren pel sud
+  const NS = "http://www.w3.org/2000/svg";
 
   // Horitzontal
   const W = 1100, H = 330, X0 = 120, X1 = W - 70, Y = 165;
@@ -126,7 +128,7 @@ window.RodDiagram = function (svg, opts) {
       const st = statusOf(trip);
       if (st.canceled) continue;
       const delay = st.delay || 0;
-      // Propera sortida que pots agafar: de Vila-seca cap a Barcelona (A) i de Pg. de Gràcia cap a Vila-seca (B)
+      // Propera sortida que pots agafar: de la teva estació cap a Barcelona (A) i de Barcelona cap a casa (B)
       const key = trip.dir === "AB" ? "A" : "B";
       const s = trip.stops.find((x) => x[0] === opts[key].id);
       if (s) {
@@ -161,7 +163,7 @@ window.RodDiagram = function (svg, opts) {
           let lane = lanesEnd.findIndex((end) => end < bx - 6);
           if (lane < 0) lane = lanesEnd.length;
           lanesEnd[lane] = bx + wbox;
-          const by = up ? Y - 93 - lane * 62 : Y + 55 + lane * 62;
+          const by = up ? Y - 52 - bh - lane * 62 : Y + 55 + lane * 62;
           minY = Math.min(minY, by - 15); maxY = Math.max(maxY, by + bh + 15);
           const g = wrap(it);
           mk(g, "line", { x1: x, y1: Y, x2: x, y2: up ? by + bh : by, stroke: it.trip.color, "stroke-width": 2, "stroke-dasharray": "3 3" });

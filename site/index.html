@@ -4,9 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Rodalies</title>
-<meta name="description" content="Trens de Rodalies entre Vila-seca i Barcelona-Passeig de Gràcia en temps real: retards, propers trens i on és cada tren.">
+<meta name="description" content="Trens de Rodalies entre Vila-seca o Cambrils i Barcelona (Pg. de Gràcia o Sants) en temps real: retards, propers trens i on és cada tren.">
 <meta property="og:title" content="Rodalies">
-<meta property="og:description" content="Vila-seca ⇄ Pg. de Gràcia en temps real: retards, propers trens i on és cada tren.">
+<meta property="og:description" content="Vila-seca o Cambrils ⇄ Pg. de Gràcia o Sants en temps real: retards, propers trens i on és cada tren.">
 <meta property="og:image" content="https://serrasan.github.io/rodalies/icon-512.jpg">
 <meta property="og:url" content="https://serrasan.github.io/rodalies/">
 <meta property="og:type" content="website">
@@ -27,7 +27,7 @@
     <img class="logo" src="logo-192.jpg" alt="" width="44" height="44">
     <div>
       <h1>Rodalies</h1>
-      <p>Vila-seca ⇄ Barcelona-Passeig de Gràcia · R14 · R15 · R16</p>
+      <p id="route-sub">Vila-seca ⇄ Barcelona-Passeig de Gràcia · R14 · R15 · R16</p>
     </div>
     <a class="maplink" href="mapa.html">Mapa del tren</a>
     <div class="snap" id="snap"><span class="pulse" aria-hidden="true"></span><span id="snap-text">Carregant…</span></div>
@@ -40,6 +40,12 @@
 </header>
 
 <main class="wrap">
+  <section class="route-pick" aria-label="Tria les teves estacions">
+    <div class="rp-group" role="group" aria-labelledby="rp-A-l"><span class="rp-label" id="rp-A-l">Prop de casa</span><div class="seg" id="rp-A"></div></div>
+    <span class="rp-swap" aria-hidden="true">⇄</span>
+    <div class="rp-group" role="group" aria-labelledby="rp-B-l"><span class="rp-label" id="rp-B-l">A Barcelona</span><div class="seg" id="rp-B"></div></div>
+  </section>
+
   <section class="summary" id="summary" aria-label="Resum"></section>
 
   <section class="panel" aria-labelledby="diag-title">
@@ -65,11 +71,11 @@
 
   <div class="boards" id="boards" data-show="AB">
     <section class="panel" data-dir="AB" aria-labelledby="h-AB">
-      <div class="panel-head"><h2 id="h-AB">Vila-seca <span class="arrow">→</span> Pg. de Gràcia</h2><span class="aside">Sortides de Vila-seca</span></div>
+      <div class="panel-head"><h2 id="h-AB">Vila-seca <span class="arrow">→</span> Pg. de Gràcia</h2><span class="aside" id="as-AB">Sortides de Vila-seca</span></div>
       <ol class="rows" id="rows-AB"></ol>
     </section>
     <section class="panel" data-dir="BA" aria-labelledby="h-BA">
-      <div class="panel-head"><h2 id="h-BA">Pg. de Gràcia <span class="arrow">→</span> Vila-seca</h2><span class="aside">Sortides de Passeig de Gràcia</span></div>
+      <div class="panel-head"><h2 id="h-BA">Pg. de Gràcia <span class="arrow">→</span> Vila-seca</h2><span class="aside" id="as-BA">Sortides de Pg. de Gràcia</span></div>
       <ol class="rows" id="rows-BA"></ol>
     </section>
   </div>

@@ -38,9 +38,10 @@
     const worst = [...late].sort((a, b) => b.st.delay - a.st.delay)[0];
     const stat = (k, v, d, cls) => el("div", { class: "stat" + (cls ? " " + cls : "") }, el("span", { class: "k" }, k), el("span", { class: "v" }, v), el("span", { class: "d" }, d));
     const nx = (dir) => nextBy[dir] ? [hm(nextBy[dir].st.est), `${nextBy[dir].trip.line} · ${nextBy[dir].st.label}`] : ["—", "Cap tren"];
+    const S = state.schedule.stations;
     document.getElementById("summary").replaceChildren(
-      stat("Propera des de Vila-seca", ...nx("AB")),
-      stat("Propera des de Pg. de Gràcia", ...nx("BA")),
+      stat("Propera des de " + S.A.short, ...nx("AB")),
+      stat("Propera des de " + S.B.short, ...nx("BA")),
       stat("Trens al tram", String(onLine.length), late.length ? `${late.length} amb retard` : "Tots a l'hora", late.length ? "alert-stat" : null),
       stat("Retard més gran", worst ? fmtDelay(worst.st.delay) : "0 min", worst ? `${worst.trip.line} ${worst.trip.train} · cap a ${state.schedule.stops[worst.trip.to]?.[0] || ""}` : "Cap retard ara"));
   }
@@ -54,7 +55,7 @@
       const rows = R.upcoming(state.schedule, state.live, dir, MAX_ROWS);
       nextBy[dir] = rows.find((r) => !r.st.canceled);
       list.replaceChildren();
-      if (!rows.length) list.append(el("li", { class: "empty-row" }, "No hi ha més trens programats avui ni demà."));
+      if (!rows.length) list.append(el("li", { class: "empty-row" }, state.schedule.trips.length ? "No hi ha més trens programats avui ni demà." : "Cap tren directe entre aquestes dues estacions."));
       let lastDay = today;
       rows.forEach(({ trip, st }, i) => {
         const d = R.dayKey(trip.dep);
@@ -169,6 +170,44 @@
       el("span", {}, el("i", { style: "background:var(--brand)" }), "Les teves estacions"));
   }
 
+  // ---------- estacions triades ----------
+  // Textos que depenen de les estacions (capçalera, sentit, títols de les sortides)
+  function renderRoute() {
+    const s = state.schedule.stations;
+    const lines = [...new Set(state.schedule.trips.map((t) => t.line))].sort((a, b) => (a === "RE") - (b === "RE") || a.localeCompare(b, "ca", { numeric: true }));
+    document.getElementById("route-sub").textContent = `${s.A.short} ⇄ ${s.B.name}` + (lines.length ? " · " + lines.join(" · ") : "");
+    for (const [dir, o, d] of [["AB", s.A, s.B], ["BA", s.B, s.A]]) {
+      document.getElementById("h-" + dir).replaceChildren(o.short + " ", el("span", { class: "arrow" }, "→"), " " + d.short);
+      document.getElementById("as-" + dir).textContent = "Sortides de " + o.short;
+      document.getElementById("t-" + dir).textContent = "Des de " + o.short;
+    }
+    document.title = `Rodalies · ${s.A.short} ⇄ ${s.B.short}`;
+    for (const side of ["A", "B"]) {
+      const box = document.getElementById("rp-" + side);
+      box.replaceChildren(...state.schedule.options[side].map((st) => el("button", {
+        type: "button", "aria-pressed": String(st.id === s[side].id),
+        onclick: () => choose(side, st.id),
+      }, st.short)));
+    }
+  }
+
+  function choose(side, id) {
+    const s = state.schedule.stations;
+    if (s[side].id === id) return;
+    const sel = { A: s.A.id, B: s.B.id, [side]: id };
+    R.setSelection(sel.A, sel.B);
+    applyCurrent();
+  }
+
+  // Torna a muntar l'horari i el directe per a les estacions triades (sense baixar res)
+  function applyCurrent() {
+    const d = R.current();
+    if (!d) return;
+    state.schedule = d.schedule; state.live = d.live;
+    setupDiagram(); renderLegend(); renderRoute();
+    renderAll();
+  }
+
   // ---------- càrrega ----------
   function renderAll() {
     renderHeader();
@@ -182,9 +221,10 @@
   async function refresh() {
     try {
       const d = await R.loadAll();
-      const newDay = !state.schedule || d.schedule.generated !== state.schedule.generated;
+      const key = (x) => x && `${x.generated}|${x.stations.A.id}|${x.stations.B.id}`;
+      const changed = key(d.schedule) !== key(state.schedule);
       state.schedule = d.schedule; state.live = d.live;
-      if (newDay) { setupDiagram(); renderLegend(); }
+      if (changed) { setupDiagram(); renderLegend(); renderRoute(); }
       renderAll();
     } catch {
       if (!state.schedule) document.getElementById("snap-text").textContent = "No s'han pogut carregar les dades";

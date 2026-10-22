@@ -1,6 +1,6 @@
 # Rodalies
 
-App web per veure, des del mòbil, els trens de Rodalies entre **Vila-seca** i **Barcelona-Passeig de Gràcia** (en els dos sentits):
+App web per veure, des del mòbil, els trens de Rodalies entre **Vila-seca** o **Cambrils** i **Barcelona-Passeig de Gràcia** o **Barcelona-Sants** (en els dos sentits). Les estacions es trien a dalt de tot de l'app i es recorden en aquell navegador (també amb l'enllaç `?A=65422&B=71801`):
 
 - **Tauler (pàgina principal):** resum, trens movent-se en temps real pel diagrama de la línia, propers trens en els dos sentits, estat general de tota la xarxa de Rodalies i avisos.
 - Retards en hores i minuts, trens cancel·lats o que no paren a l'estació.
@@ -44,7 +44,7 @@ A partir d'aquí l'app demana dades noves cada 30 segons. Si el Worker falla, to
 | `worker/worker.js` | Intermediari de Cloudflare que serveix les dades de Renfe al moment. |
 | `.github/workflows/update.yml` | Executa els scripts cada 5 minuts i publica a GitHub Pages. |
 
-Per canviar de trajecte, edita `config.json` amb els codis d'estació de Renfe (per exemple Cambrils és `65422`, Barcelona-Sants `71801`).
+Les estacions que es poden triar són a `options` de `config.json` (A: costat de casa, B: costat de Barcelona; `stations` és la tria per defecte). Per afegir-ne una, posa-hi el seu codi de Renfe (per exemple Reus és `71400`, Tarragona `71500`). Del fitxer de mitja distància només s'agafen els Regional Exprés i regionals, que van amb bitllet de Rodalies (no Alvia, Intercity ni Avant).
 
 ## Limitacions
 
