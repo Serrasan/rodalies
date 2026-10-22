@@ -1,0 +1,11 @@
+82 ('REG.EXP.', '', ('71401', '71801', '71802'))
+42 ('REG.EXP.', '', ('65422', '71401', '71801', '71802'))
+13 ('ALVIA', '', ('65422', '71801'))
+6 ('Intercity', '', ('65422', '71801'))
+4 ('AVANT EXP', '', ('65422', '71801'))
+  Vila-seca ⇄ Pg. de Gràcia: 122 trens
+  Vila-seca ⇄ Sants: 122 trens
+  Cambrils ⇄ Pg. de Gràcia: 40 trens
+  Cambrils ⇄ Sants: 40 trens
+schedule.json: 122 trens (62 A→B, 60 B→A), 2 Regional Exprés afegits que no eren a l'horari de Rodalies
+live.json: 15 trens amb dades, 15 posicions, 2 incidències, errors: cap
