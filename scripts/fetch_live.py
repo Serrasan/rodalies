@@ -57,6 +57,7 @@ def main():
 
     lines = {t["line"] for t in SCHEDULE["trips"]}
     station_ids = {s["id"] for s in CONFIG["stations"].values()}
+    station_ids |= {s["id"] for side in (CONFIG.get("options") or {}).values() for s in side}
     out = {"generated": int(now.timestamp()), "feeds": {}, "trips": {}, "vehicles": {}, "alerts": [], "network": {}, "errors": []}
 
     try:

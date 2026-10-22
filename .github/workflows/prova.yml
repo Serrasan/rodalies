@@ -1,0 +1,46 @@
+name: Prova (branca estacions)
+on:
+  push:
+    branches: [estacions]
+permissions:
+  contents: write
+jobs:
+  prova:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12" }
+      - name: Baixa GTFS
+        run: |
+          curl -sSL -A rodalies-app -o /tmp/rod.zip "$(jq -r .gtfs_url config.json)"
+          curl -sSL -A rodalies-app -o /tmp/ld.zip "$(jq -r .gtfs_ld_url config.json)"
+      - name: Informe de línies de mitja distància
+        run: |
+          python - <<'PY' > report.txt
+          import zipfile, csv, io, collections
+          zf = zipfile.ZipFile("/tmp/ld.zip")
+          rd = lambda n: [{k.strip(): v.strip() for k, v in r.items()} for r in csv.DictReader(io.TextIOWrapper(zf.open(n), encoding="utf-8-sig"))]
+          routes = {r["route_id"]: r for r in rd("routes.txt")}
+          trips = {t["trip_id"]: t for t in rd("trips.txt")}
+          ids = {"71401", "65422", "71802", "71801"}
+          seen = collections.defaultdict(set)
+          for st in rd("stop_times.txt"):
+              if st["stop_id"] in ids: seen[st["trip_id"]].add(st["stop_id"])
+          c = collections.Counter()
+          for tid, s in seen.items():
+              if s & {"71401", "65422"} and s & {"71802", "71801"}:
+                  r = routes.get(trips[tid]["route_id"], {})
+                  c[(r.get("route_short_name"), r.get("route_long_name"), tuple(sorted(s)))] += 1
+          for k, v in sorted(c.items(), key=lambda x: -x[1]): print(v, k)
+          PY
+          cat report.txt
+      - run: python scripts/build_schedule.py /tmp/rod.zip /tmp/ld.zip | tee -a report.txt
+      - run: python scripts/fetch_live.py | tee -a report.txt
+      - name: Desa resultats a la branca prova-dades
+        run: |
+          mkdir /tmp/out && cp data/schedule.json data/live.json report.txt /tmp/out/
+          git config user.name ci && git config user.email ci@example.com
+          git checkout --orphan prova-dades && git rm -rqf . && cp /tmp/out/* . && git add schedule.json live.json report.txt
+          git commit -qm "dades de prova" && git push -fq origin prova-dades
